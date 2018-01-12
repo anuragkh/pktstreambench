@@ -180,7 +180,7 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
-                            <program-class>flink.benchmark.AdvertisingTopologyNative</program-class>
+                            <program-class>pkt.benchmark.ThroughputBenchmark</program-class>
                         </manifestEntries>
                     </archive>
                 </configuration>

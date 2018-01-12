@@ -11,5 +11,6 @@ public class ThroughputBenchmark {
 
         DataStream<byte[]> pkts = env.addSource(new PktGenerator());
         pkts.flatMap(new ThroughputLogger(54, 1_000_000));
+        env.execute("Packet Throughput Benchmark");
     }
 }

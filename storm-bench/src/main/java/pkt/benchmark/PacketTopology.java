@@ -2,6 +2,7 @@ package pkt.benchmark;
 
 import org.apache.storm.Config;
 import org.apache.storm.LocalCluster;
+import org.apache.storm.kafka.bolt.KafkaBolt;
 import org.apache.storm.spout.SpoutOutputCollector;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
@@ -117,9 +118,11 @@ public class PacketTopology {
     public static void main(String[] args) throws Exception {
         TopologyBuilder builder = new TopologyBuilder();
 
+        KafkaBolt<String, byte[]> sink = new KafkaBolt<>();
         builder.setSpout("pkt", new PktSpout(), 1);
         // builder.setBolt("processed_pkt", new NoOpBolt(), 1).shuffleGrouping("pkt");
-        builder.setBolt("thput_pkt", new ThroughputBolt(1_000_000), 1).shuffleGrouping("pkt");
+        // builder.setBolt("thput_pkt", new ThroughputBolt(1_000_000), 1).shuffleGrouping("pkt");
+        builder.setBolt("thput_pkt", sink, 1).shuffleGrouping("pkt");
 
         LocalCluster cluster = new LocalCluster();
         cluster.submitTopology("test", new Config(), builder.createTopology());

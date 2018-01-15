@@ -84,7 +84,7 @@ public class PacketTopology {
         }
 
         @Override
-        public void execute(Tuple input) {
+        public void execute(Tuple tuple) {
             if (start == 0) {
                 start = System.currentTimeMillis();
             }
@@ -108,8 +108,8 @@ public class PacketTopology {
                     lastPkts = received;
                 }
             }
-
-            _collector.ack(input);
+            _collector.emit(tuple, tuple.getValues());
+            _collector.ack(tuple);
         }
 
         @Override
@@ -133,8 +133,8 @@ public class PacketTopology {
                 .withTupleToKafkaMapper(new FieldNameBasedTupleToKafkaMapper<>("key", "pkt"));
         builder.setSpout("pkt", new PktSpout(), 1);
         // builder.setBolt("processed_pkt", new NoOpBolt(), 1).shuffleGrouping("pkt");
-        // builder.setBolt("thput_pkt", new ThroughputBolt(1_000_000), 1).shuffleGrouping("pkt");
-        builder.setBolt("fwdToKafka", sink, 1).shuffleGrouping("pkt");
+        builder.setBolt("thput_pkt", new ThroughputBolt(1_000_000), 1).shuffleGrouping("pkt");
+        builder.setBolt("fwdToKafka", sink, 1).shuffleGrouping("thput_pkt");
 
         LocalCluster cluster = new LocalCluster();
         cluster.submitTopology("test", new Config(), builder.createTopology());

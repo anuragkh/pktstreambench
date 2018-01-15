@@ -3,6 +3,8 @@ package pkt.benchmark;
 import org.apache.storm.Config;
 import org.apache.storm.LocalCluster;
 import org.apache.storm.kafka.bolt.KafkaBolt;
+import org.apache.storm.kafka.bolt.mapper.FieldNameBasedTupleToKafkaMapper;
+import org.apache.storm.kafka.bolt.selector.DefaultTopicSelector;
 import org.apache.storm.spout.SpoutOutputCollector;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
@@ -17,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
 import java.util.Map;
+import java.util.Properties;
 
 public class PacketTopology {
     static Logger LOG = LoggerFactory.getLogger(PacketTopology.class);
@@ -118,7 +121,16 @@ public class PacketTopology {
     public static void main(String[] args) throws Exception {
         TopologyBuilder builder = new TopologyBuilder();
 
-        KafkaBolt<String, byte[]> sink = new KafkaBolt<>();
+        Properties props = new Properties();
+        props.put("bootstrap.servers", "localhost:9092");
+        props.put("acks", "1");
+        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        props.put("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer");
+
+        KafkaBolt<String, byte[]> sink = new KafkaBolt<String, byte[]>()
+                .withProducerProperties(props)
+                .withTopicSelector(new DefaultTopicSelector("test"))
+                .withTupleToKafkaMapper(new FieldNameBasedTupleToKafkaMapper<>());
         builder.setSpout("pkt", new PktSpout(), 1);
         // builder.setBolt("processed_pkt", new NoOpBolt(), 1).shuffleGrouping("pkt");
         // builder.setBolt("thput_pkt", new ThroughputBolt(1_000_000), 1).shuffleGrouping("pkt");

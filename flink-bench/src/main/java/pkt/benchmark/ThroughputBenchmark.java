@@ -14,8 +14,14 @@ public class ThroughputBenchmark {
 
         DataStream<byte[]> pkts = env.addSource(new PktGenerator());
         // pkts.flatMap(new ThroughputLogger(54, 1_000_000));
-        pkts.addSink(new FlinkKafkaProducer08<>("pkt", (SerializationSchema<byte[]>) bytes -> bytes,
-                new Properties()));
+        Properties props = new Properties();
+        props.put("bootstrap.servers", "localhost:9092");
+        props.put("acks", "1");
+        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        props.put("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer");
+
+        props.setProperty("bootstrap.servers", "localhost:9092");
+        pkts.addSink(new FlinkKafkaProducer08<>("pkt", (SerializationSchema<byte[]>) bytes -> bytes, props));
         env.execute("Packet Throughput Benchmark");
     }
 }

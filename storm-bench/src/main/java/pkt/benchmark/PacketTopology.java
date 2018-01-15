@@ -133,7 +133,7 @@ public class PacketTopology {
                 .withTupleToKafkaMapper(new FieldNameBasedTupleToKafkaMapper<>("key", "pkt"));
         builder.setSpout("pkt", new PktSpout(), 1);
         // builder.setBolt("processed_pkt", new NoOpBolt(), 1).shuffleGrouping("pkt");
-        builder.setBolt("thput_pkt", new ThroughputBolt(1_000_000), 1).shuffleGrouping("pkt");
+        builder.setBolt("thput_pkt", new ThroughputBolt(100000), 1).shuffleGrouping("pkt");
         builder.setBolt("fwdToKafka", sink, 1).shuffleGrouping("thput_pkt");
 
         LocalCluster cluster = new LocalCluster();

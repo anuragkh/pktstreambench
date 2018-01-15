@@ -1,11 +1,12 @@
 package pkt.benchmark.utils;
 
 import org.apache.flink.api.common.functions.FlatMapFunction;
+import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.util.Collector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ThroughputLogger implements FlatMapFunction<byte[], Integer> {
+public class ThroughputLogger implements MapFunction<byte[], byte[]> {
 
     private static final Logger LOG = LoggerFactory.getLogger(ThroughputLogger.class);
 
@@ -21,7 +22,7 @@ public class ThroughputLogger implements FlatMapFunction<byte[], Integer> {
     }
 
     @Override
-    public void flatMap(byte[] pkt, Collector<Integer> collector) throws Exception {
+    public byte[] map(byte[] pkt) throws Exception {
         totalReceived++;
         if (totalReceived % logfreq == 0) {
             // throughput over entire time
@@ -43,5 +44,6 @@ public class ThroughputLogger implements FlatMapFunction<byte[], Integer> {
                 lastTotalReceived = totalReceived;
             }
         }
+        return pkt;
     }
 }

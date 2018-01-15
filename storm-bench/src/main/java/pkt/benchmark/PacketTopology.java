@@ -130,11 +130,11 @@ public class PacketTopology {
         KafkaBolt<String, byte[]> sink = new KafkaBolt<String, byte[]>()
                 .withProducerProperties(props)
                 .withTopicSelector(new DefaultTopicSelector("test"))
-                .withTupleToKafkaMapper(new FieldNameBasedTupleToKafkaMapper<>());
+                .withTupleToKafkaMapper(new FieldNameBasedTupleToKafkaMapper<>("key", "pkt"));
         builder.setSpout("pkt", new PktSpout(), 1);
         // builder.setBolt("processed_pkt", new NoOpBolt(), 1).shuffleGrouping("pkt");
         // builder.setBolt("thput_pkt", new ThroughputBolt(1_000_000), 1).shuffleGrouping("pkt");
-        builder.setBolt("thput_pkt", sink, 1).shuffleGrouping("pkt");
+        builder.setBolt("fwdToKafka", sink, 1).shuffleGrouping("pkt");
 
         LocalCluster cluster = new LocalCluster();
         cluster.submitTopology("test", new Config(), builder.createTopology());

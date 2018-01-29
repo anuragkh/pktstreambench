@@ -13,6 +13,8 @@ public class ThroughputBenchmark {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
+        int parallelism = Integer.parseInt(args[1]);
+
         Properties props = new Properties();
         props.put("bootstrap.servers", "localhost:9092");
         props.put("acks", "1");
@@ -21,7 +23,8 @@ public class ThroughputBenchmark {
 
         DataStream<byte[]> pkts = env.addSource(new PktGenerator());
         pkts.map(new ThroughputLogger(54, 1_000_000))
-                .addSink(new FlinkKafkaProducer08<>("pkt", (SerializationSchema<byte[]>) bytes -> bytes, props));
+                .addSink(new FlinkKafkaProducer08<>("pkt", (SerializationSchema<byte[]>) bytes -> bytes, props))
+                .setParallelism(parallelism);
         env.execute("Packet Throughput Benchmark");
     }
 }

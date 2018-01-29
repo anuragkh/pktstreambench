@@ -121,6 +121,8 @@ public class PacketTopology {
     public static void main(String[] args) throws Exception {
         TopologyBuilder builder = new TopologyBuilder();
 
+        int parallelism = Integer.parseInt(args[0]);
+
         Properties props = new Properties();
         props.put("bootstrap.servers", "localhost:9092");
         props.put("acks", "1");
@@ -133,8 +135,8 @@ public class PacketTopology {
                 .withTupleToKafkaMapper(new FieldNameBasedTupleToKafkaMapper<>("key", "pkt"));
         builder.setSpout("pkt", new PktSpout(), 1);
         // builder.setBolt("processed_pkt", new NoOpBolt(), 1).shuffleGrouping("pkt");
-        builder.setBolt("thput_pkt", new ThroughputBolt(100000), 1).shuffleGrouping("pkt");
-        builder.setBolt("fwdToKafka", sink, 32).shuffleGrouping("thput_pkt");
+        builder.setBolt("thput_pkt", new ThroughputBolt(1000000), 1).shuffleGrouping("pkt");
+        builder.setBolt("fwdToKafka", sink, parallelism).shuffleGrouping("thput_pkt");
 
         LocalCluster cluster = new LocalCluster();
         cluster.submitTopology("test", new Config(), builder.createTopology());
